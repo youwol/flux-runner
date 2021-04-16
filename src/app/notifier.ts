@@ -16,7 +16,7 @@ export function plugNotifications(environment: Environment){
     ).subscribe(
         (log:ErrorLog<ModuleError>) => Notifier.error({ 
             message: log.error.message, 
-            title:  log.error.mdle.Factory.id
+            title:  log.error.module.Factory.id
         })
     )
 }
