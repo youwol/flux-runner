@@ -12,7 +12,8 @@
         "test-coverage": "echo 'no tests for now'",
         "doc": "typedoc src/ --exclude src/index.ts --exclude src/tests --out dist/docs --theme default",
         "start": "webpack serve",
-        "upgrade-youwol": "yarn upgrade @youwol/cdn-client @youwol/flux-core @youwol/flux-view"
+        "upgrade-youwol": "yarn upgrade @youwol/cdn-client @youwol/flux-core @youwol/flux-view",
+        "publish-npm-public": "yarn build:prod && yarn test-coverage && yarn publish --access public"
     },
     "license": "MIT",
     "dependencies": {
