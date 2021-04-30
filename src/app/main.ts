@@ -16,8 +16,8 @@ await fetchStyleSheets([
 await fetchBundles({
     'lodash': '4.17.15',
     "grapes": '0.16.2',
-    "@youwol/flux-core": '0.0.8',
-    '@youwol/flux-view': '0.0.6',
+    "@youwol/flux-core": 'latest',
+    '@youwol/flux-view': 'latest',
     "rxjs": '6.5.5',
     },
     window
