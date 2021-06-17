@@ -46,7 +46,7 @@ function run(state: ApplicationState){
         contentDiv.innerHTML = project.runnerRendering.layout
         
         let allModules = [...project.workflow.modules,...project.workflow.plugins]
-        renderTemplate(contentDiv, allModules )
+        renderTemplate(contentDiv, allModules, {applyWrapperAttributes:false})
 
         let allSubscriptions = new Map()
         subscribeConnections(  allModules, project.workflow.connections, allSubscriptions )
