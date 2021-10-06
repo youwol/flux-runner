@@ -1,7 +1,7 @@
 require('./style.css');
 import {Environment, Project, loadProjectDatabase$, Connection, 
-    instanceOfSideEffects, renderTemplate, subscribeConnections} from '@youwol/flux-core'
-import { BehaviorSubject, Subscription } from 'rxjs';
+    instanceOfSideEffects, renderTemplate, subscribeConnections, loadProjectURI$, Workflow, Component} from '@youwol/flux-core'
+import { BehaviorSubject, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { plugNotifications } from './notifier';
 
@@ -12,17 +12,19 @@ class ApplicationState{
         {   
             renderingWindow: window,
             executingWindow: window,
-            console: { ...console, ...{log: () => undefined} }
+            console: { ...console, log: () => undefined }
         }
     )
     subscriptionStore = new Map<Connection,Subscription>()
-    public readonly project$ = new BehaviorSubject<Project>(undefined)
+    public readonly project$ = new Subject<Project>()
 
-    constructor(public readonly projectId: string){
+    workflow$ = new ReplaySubject<Workflow>(1)
+    
+    constructor(){}
 
-        let wfGetter = () => this.project$.getValue().workflow
+    loadProjectById(projectId: string){
 
-        loadProjectDatabase$( projectId, wfGetter, this.subscriptionStore, this.environment).pipe(
+        loadProjectDatabase$( projectId, this.workflow$, this.subscriptionStore, this.environment).pipe(
             map(({ project }:{ project:Project }) => {
                 let wf = project.workflow;
                 [...wf.plugins, ...wf.modules].forEach( m=> instanceOfSideEffects(m) &&  m.apply() )
@@ -34,28 +36,48 @@ class ApplicationState{
 
 function run(state: ApplicationState){
 
-    state.project$.pipe(
-        filter( project => project != undefined)
-    ).subscribe( (project) => {
+    state.project$.subscribe( (project: Project) => {
+
+        let rootComponent = project.workflow.modules
+        .find( mdle => mdle.moduleId == Component.rootComponentId) as Component.Module
 
         const style = document.createElement('style');
-        style.textContent =  project.runnerRendering.style;
+        style.textContent = rootComponent.getFullCSS(project.workflow, {asString:true}) as string
         document.head.append(style);
 
-        let contentDiv = document.getElementById("content") as HTMLDivElement
-        contentDiv.innerHTML = project.runnerRendering.layout
-        
-        let allModules = [...project.workflow.modules,...project.workflow.plugins]
-        renderTemplate(contentDiv, allModules, {applyWrapperAttributes:false})
+        let contentDiv = document.getElementById("content") as HTMLDivElement     
+        contentDiv.appendChild(rootComponent.getOuterHTML())
+        renderTemplate(contentDiv, [rootComponent])
 
+        applyHackRemoveDefaultStyles()
+        
         let allSubscriptions = new Map()
-        subscribeConnections(  allModules, project.workflow.connections, allSubscriptions )
+        let allModules = [...project.workflow.modules,...project.workflow.plugins]
+        subscribeConnections( allModules, project.workflow.connections, allSubscriptions )
     })
 }
 
 let projectId = new URLSearchParams(window.location.search).get("id")
-let state = new ApplicationState(projectId)
+let state = new ApplicationState()
+
+state.loadProjectById(projectId)
 
 plugNotifications(state.environment)
 
 run(state)
+
+
+function applyHackRemoveDefaultStyles(){
+    /**
+     * When defining ModuleFlux with views it is possible to associated default style.
+     * Those default styles actually get higher priority than properties defined by grapes
+     * using '#module-id{ ... }' => we remove the default.
+     * Need to find a better way to associated default styles. 
+     * For modules replicated afterward, this hack is not working.
+     */
+    let fluxElements = document.querySelectorAll('.flux-element')
+    Array.from(fluxElements).forEach((element: HTMLDivElement) => {
+        element.style.removeProperty("height")
+        element.style.removeProperty("width")
+    })
+}
