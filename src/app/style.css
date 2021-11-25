@@ -2,6 +2,9 @@
 .flux-builder-only{
     display:none !important
 }
+.flux-element.flux-builder-only{
+    display:none !important
+}
 
 #notifications-container{
     position: absolute;
