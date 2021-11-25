@@ -5,6 +5,8 @@ import { BehaviorSubject, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { plugNotifications } from './notifier';
 
+// this variable has been defined in the main.ts to initiate displaying dependencies fetching
+var loadingScreen = window['fluRunnerLoadingScreen']
 
 class ApplicationState{
 
@@ -20,12 +22,18 @@ class ApplicationState{
 
     workflow$ = new ReplaySubject<Workflow>(1)
     
-    constructor(){}
 
-    loadProjectById(projectId: string){
+    constructor() { }
 
-        loadProjectDatabase$( projectId, this.workflow$, this.subscriptionStore, this.environment).pipe(
-            map(({ project }:{ project:Project }) => {
+    loadProjectById(projectId: string) {
+
+        loadProjectDatabase$(
+            projectId,
+            this.workflow$,
+            this.subscriptionStore,
+            this.environment,
+            (cdnEvent) => loadingScreen.next(cdnEvent)
+        ).pipe(
                 let wf = project.workflow;
                 [...wf.plugins, ...wf.modules].forEach( m=> instanceOfSideEffects(m) &&  m.apply() )
                 return project
@@ -38,6 +46,7 @@ function run(state: ApplicationState){
 
     state.project$.subscribe( (project: Project) => {
 
+        loadingScreen.done()
         let rootComponent = project.workflow.modules
         .find( mdle => mdle.moduleId == Component.rootComponentId) as Component.Module
 

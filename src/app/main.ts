@@ -3,9 +3,15 @@
 // (index.html is handled by HtmlWebpackPlugin)
 
 import { fetchBundles, fetchStyleSheets } from '@youwol/cdn-client';
-export {}
+export { }
 
 require('./style.css');
+let cdn = window['@youwol/cdn-client']
+
+var loadingScreen = new cdn.LoadingScreenView({ container: document.body, mode: 'svg' })
+loadingScreen.render()
+// this variable will be used in the on-load.ts to continue displaying dependencies fetching
+window['fluRunnerLoadingScreen'] = loadingScreen
 
 await Promise.all([
     fetchStyleSheets([
@@ -19,10 +25,14 @@ await Promise.all([
         "@youwol/flux-core": 'latest',
         '@youwol/flux-view': 'latest',
         "rxjs": '6.5.5',
-        },
-        window
-    )
+    },
+        window,
+        (event) => {
+            loadingScreen.next(event)
+        }
+    ).catch((error) => {
+        loadingScreen.error(error)
+    })
 ])
-
 await import('./on-load')
 
