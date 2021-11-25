@@ -1,27 +1,28 @@
 require('./style.css');
-import {Environment, Project, loadProjectDatabase$, Connection, 
-    instanceOfSideEffects, renderTemplate, subscribeConnections, loadProjectURI$, Workflow, Component} from '@youwol/flux-core'
-import { BehaviorSubject, ReplaySubject, Subject, Subscription } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import {
+    Environment, Project, loadProjectDatabase$, Connection,
+    instanceOfSideEffects, renderTemplate, subscribeConnections, Workflow, Component
+} from '@youwol/flux-core'
+import { ReplaySubject, Subject, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { plugNotifications } from './notifier';
 
 // this variable has been defined in the main.ts to initiate displaying dependencies fetching
 var loadingScreen = window['fluRunnerLoadingScreen']
 
-class ApplicationState{
+class ApplicationState {
 
     environment = new Environment(
-        {   
+        {
             renderingWindow: window,
             executingWindow: window,
             console: { ...console, log: () => undefined }
         }
     )
-    subscriptionStore = new Map<Connection,Subscription>()
+    subscriptionStore = new Map<Connection, Subscription>()
     public readonly project$ = new Subject<Project>()
 
     workflow$ = new ReplaySubject<Workflow>(1)
-    
 
     constructor() { }
 
@@ -34,35 +35,36 @@ class ApplicationState{
             this.environment,
             (cdnEvent) => loadingScreen.next(cdnEvent)
         ).pipe(
+            map(({ project }: { project: Project }) => {
                 let wf = project.workflow;
-                [...wf.plugins, ...wf.modules].forEach( m=> instanceOfSideEffects(m) &&  m.apply() )
+                [...wf.plugins, ...wf.modules].forEach(m => instanceOfSideEffects(m) && m.apply())
                 return project
             })
-        ).subscribe( project => this.project$.next(project))
+        ).subscribe(project => this.project$.next(project))
     }
 }
 
-function run(state: ApplicationState){
+function run(state: ApplicationState) {
 
-    state.project$.subscribe( (project: Project) => {
+    state.project$.subscribe((project: Project) => {
 
         loadingScreen.done()
         let rootComponent = project.workflow.modules
-        .find( mdle => mdle.moduleId == Component.rootComponentId) as Component.Module
+            .find(mdle => mdle.moduleId == Component.rootComponentId) as Component.Module
 
         const style = document.createElement('style');
-        style.textContent = rootComponent.getFullCSS(project.workflow, {asString:true}) as string
+        style.textContent = rootComponent.getFullCSS(project.workflow, { asString: true }) as string
         document.head.append(style);
 
-        let contentDiv = document.getElementById("content") as HTMLDivElement     
+        let contentDiv = document.getElementById("content") as HTMLDivElement
         contentDiv.appendChild(rootComponent.getOuterHTML())
         renderTemplate(contentDiv, [rootComponent])
 
         applyHackRemoveDefaultStyles()
-        
+
         let allSubscriptions = new Map()
-        let allModules = [...project.workflow.modules,...project.workflow.plugins]
-        subscribeConnections( allModules, project.workflow.connections, allSubscriptions )
+        let allModules = [...project.workflow.modules, ...project.workflow.plugins]
+        subscribeConnections(allModules, project.workflow.connections, allSubscriptions)
     })
 }
 
@@ -76,7 +78,7 @@ plugNotifications(state.environment)
 run(state)
 
 
-function applyHackRemoveDefaultStyles(){
+function applyHackRemoveDefaultStyles() {
     /**
      * When defining ModuleFlux with views it is possible to associated default style.
      * Those default styles actually get higher priority than properties defined by grapes
