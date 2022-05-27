@@ -17,10 +17,9 @@
     },
     "license": "MIT",
     "dependencies": {
-        "@youwol/logging": "^0.0.2",
-        "@youwol/cdn-client": "^0.0.12",
-        "@youwol/flux-core": "^0.0.24",
-        "@youwol/flux-view": "^0.0.11",
+        "@youwol/cdn-client": "^0.1.2",
+        "@youwol/flux-core": "^0.1.0",
+        "@youwol/flux-view": "^0.1.1",
         "lodash": "4.x",
         "reflect-metadata": "0.x",
         "rxjs": "6.x"
@@ -50,10 +49,9 @@
             "version": "0.0.0"
         },
         "cdnDependencies": {
-            "@youwol/logging": "^0.0.2",
-            "@youwol/cdn-client": "^0.0.12",
-            "@youwol/flux-core": "^0.0.24",
-            "@youwol/flux-view": "^0.0.11",
+            "@youwol/cdn-client": "^0.1.2",
+            "@youwol/flux-core": "^0.1.0",
+            "@youwol/flux-view": "^0.1.1",
             "lodash": "4.x",
             "reflect-metadata": "0.x",
             "rxjs": "6.x"
