@@ -51,7 +51,6 @@ module.exports = {
       "@youwol/cdn-client": "window['@youwol/cdn-client']",
       "@youwol/flux-core": "window['@youwol/flux-core']",
       "@youwol/flux-view": "window['@youwol/flux-view']",
-      "@youwol/logging": "window['@youwol/logging']",
     },
   ],
   module: {
