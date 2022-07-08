@@ -9,13 +9,15 @@ import {
     subscribeConnections,
     Workflow,
     Component,
+    loadProject$,
+    createObservableFromFetch,
 } from '@youwol/flux-core'
-import { of, ReplaySubject, Subject, Subscription } from 'rxjs'
+import { ReplaySubject, Subject, Subscription } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { plugNotifications } from './notifier'
 
 // this variable has been defined in the main.ts to initiate displaying dependencies fetching
-var loadingScreen = window['fluRunnerLoadingScreen']
+const loadingScreen = window['fluRunnerLoadingScreen']
 
 class ApplicationState {
     environment = new Environment({
@@ -28,8 +30,6 @@ class ApplicationState {
 
     workflow$ = new ReplaySubject<Workflow>(1)
 
-    constructor() {}
-
     loadProjectById(projectId: string) {
         loadProjectDatabase$(
             projectId,
@@ -39,16 +39,36 @@ class ApplicationState {
             (cdnEvent) => loadingScreen.next(cdnEvent),
         )
             .pipe(
-                map(({ project }: { project: Project }) => {
-                    let wf = project.workflow
-                    ;[...wf.plugins, ...wf.modules].forEach(
-                        (m) => instanceOfSideEffects(m) && m.apply(),
-                    )
-                    return project
-                }),
+                map(({ project }: { project: Project }) =>
+                    applySideEffects(project),
+                ),
             )
             .subscribe((project) => this.project$.next(project))
     }
+
+    loadProjectByUrl(url: string) {
+        loadProject$(
+            createObservableFromFetch(new Request(url)),
+            this.workflow$,
+            this.subscriptionStore,
+            this.environment,
+            (cdnEvent) => loadingScreen.next(cdnEvent),
+        )
+            .pipe(
+                map(({ project }: { project: Project }) =>
+                    applySideEffects(project),
+                ),
+            )
+            .subscribe((project) => this.project$.next(project))
+    }
+}
+
+function applySideEffects(project: Project) {
+    let wf = project.workflow
+    ;[...wf.plugins, ...wf.modules].forEach(
+        (m) => instanceOfSideEffects(m) && m.apply(),
+    )
+    return project
 }
 
 function run(state: ApplicationState) {
@@ -83,14 +103,13 @@ function run(state: ApplicationState) {
     })
 }
 
-let projectId = new URLSearchParams(window.location.search).get('id')
-let state = new ApplicationState()
+let appState = new ApplicationState()
 
-state.loadProjectById(projectId)
+appState.loadProjectById(new URLSearchParams(window.location.search).get('id'))
 
-plugNotifications(state.environment)
+plugNotifications(appState.environment)
 
-run(state)
+run(appState)
 
 function applyHackRemoveDefaultStyles() {
     /**
