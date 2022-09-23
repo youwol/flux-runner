@@ -2,7 +2,7 @@ import shutil
 from pathlib import Path
 
 from youwol.pipelines.pipeline_typescript_weback_npm import Template, PackageType, Dependencies, \
-    RunTimeDeps, generate_template, DevServer
+    RunTimeDeps, generate_template, DevServer, Bundles, MainModule
 from youwol_utils import parse_json
 
 folder_path = Path(__file__).parent
@@ -19,13 +19,19 @@ template = Template(
     author=pkg_json['author'],
     dependencies=Dependencies(
         runTime=RunTimeDeps(
-            load={
+            externals={
                 '@youwol/flux-view': '^1.0.3',
                 'lodash': '^4.17.15',
                 '@youwol/cdn-client': '^1.0.2',
                 '@youwol/flux-core': '^0.2.1',
                 'rxjs': '^6.5.5'
             }
+        )
+    ),
+    bundles=Bundles(
+        mainModule=MainModule(
+            entryFile='index.html',
+            loadDependencies=['@youwol/flux-view', 'lodash', '@youwol/cdn-client', '@youwol/flux-core', 'rxjs']
         )
     ),
     userGuide=True,
