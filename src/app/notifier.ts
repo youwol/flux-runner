@@ -29,14 +29,14 @@ export function plugNotifications(environment: Environment) {
             }),
         )
     environment.processes$.subscribe((p: Process) => {
-        let classesIcon = {
+        const classesIcon = {
             [ProcessMessageKind.Scheduled]: 'fas fa-clock px-2',
             [ProcessMessageKind.Started]: 'fas fa-cog fa-spin px-2',
             [ProcessMessageKind.Succeeded]: 'fas fa-check fv-text-success px-2',
             [ProcessMessageKind.Failed]: 'fas fa-times fv-text-error px-2',
             [ProcessMessageKind.Log]: 'fas fa-cog fa-spin px-2',
         }
-        let doneMessages = [
+        const doneMessages = [
             ProcessMessageKind.Succeeded,
             ProcessMessageKind.Failed,
         ]
@@ -91,7 +91,7 @@ export class Notifier {
         message?: string | Stream$<unknown, string>
         classIcon: string | Stream$<unknown, string>
         title: string
-        timeout?: Observable<any>
+        timeout?: Observable<unknown>
     }) {
         Notifier.popup({ message, title, classIcon, timeout, classBorder: '' })
     }
@@ -137,9 +137,9 @@ export class Notifier {
         title: string
         classIcon: string | Stream$<unknown, string>
         classBorder: string
-        timeout?: Observable<any>
+        timeout?: Observable<unknown>
     }) {
-        let view: VirtualDOM = {
+        const view: VirtualDOM = {
             class: 'm-2 p-2 my-1 bg-white rounded ' + classBorder,
             style: { border: 'solid' },
             children: [
@@ -168,7 +168,7 @@ export class Notifier {
                 timeout && timeout.subscribe(() => elem.remove())
             },
         }
-        let div = render(view)
+        const div = render(view)
         document.getElementById('notifications-container').appendChild(div)
     }
 }
