@@ -60,7 +60,7 @@ const entries = {
 export const setup = {
     name:'@youwol/flux-runner',
         assetId:'QHlvdXdvbC9mbHV4LXJ1bm5lcg==',
-    version:'0.1.1',
+    version:'0.1.2-wip',
     shortDescription:"Flux runner application",
     developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/flux-runner&tab=doc',
     npmPackage:'https://www.npmjs.com/package/@youwol/flux-runner',
@@ -106,7 +106,7 @@ export const setup = {
         const parameters = installParameters || {}
         const scripts = [
             ...(parameters.scripts || []),
-            `@youwol/flux-runner#0.1.1~dist/@youwol/flux-runner/${entry.name}.js`
+            `@youwol/flux-runner#0.1.2-wip~dist/@youwol/flux-runner/${entry.name}.js`
         ]
         const modules = [
             ...(parameters.modules || []),
